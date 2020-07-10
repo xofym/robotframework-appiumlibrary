@@ -105,6 +105,24 @@ class _TouchKeywords(KeywordGroup):
         element = self._element_find(locator, True, True)
         driver.execute_script("mobile: scroll", {"direction": 'up', 'element': element.id})
 
+    def scroll_down_in(self, locator, scroll_locator=None):
+        """Scrolls down in scrollview to element"""
+        platform = self._get_platform()
+        if platform == 'android':
+            driver = self._current_application()
+            if locator.find("=") >= 0:
+                el_desc = locator.split("=")[1]
+            else:
+                el_desc = locator 
+            if scroll_locator.find("=") >= 0:
+                scroll_desc = scroll_locator.split("=")[1]
+            else:
+                scroll_desc = locator 
+            driver.find_element_by_android_uiautomator('new UiScrollable(new UiSelector().descriptionContains("'+scroll_desc+'")).scrollIntoView(new UiSelector().descriptionContains("'+el_desc+'"))')
+        else:
+            scroll_down(self,locator)
+        
+
     def long_press(self, locator, duration=1000):
         """ Long press the element with optional duration """
         driver = self._current_application()
