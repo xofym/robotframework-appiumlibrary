@@ -101,7 +101,7 @@ class _TouchKeywords(KeywordGroup):
         """Scrolls up to element"""
         self.scroll_dir(locator=locator, direction='up')
 
-    def scroll_down_in(self, locator, scroll_locator=None):
+    def scroll_down_in(self, locator, scroll_locator=None, max_iteration=1):
         """Scrolls down in scrollview to element"""
         platform = self._get_platform()
         if platform == 'android':
@@ -116,7 +116,7 @@ class _TouchKeywords(KeywordGroup):
                 scroll_desc = locator 
             driver.find_element_by_android_uiautomator('new UiScrollable(new UiSelector().descriptionContains("'+scroll_desc+'")).scrollIntoView(new UiSelector().descriptionContains("'+el_desc+'"))')
         elif platform == 'ios':
-            self.search_and_display_ios_element(locator=locator)
+            self.search_and_display_ios_element(locator=locator,max_iteration=max_iteration)
 
     def long_press(self, locator, duration=1000):
         """ Long press the element with optional duration """
@@ -163,7 +163,7 @@ class _TouchKeywords(KeywordGroup):
         element = self._element_find(locator, True, True)
         driver.execute_script("mobile: scroll", {"direction": direction, 'element': element.id})
 
-    def search_and_display_ios_element(self, locator, max_iteration=10):
+    def search_and_display_ios_element(self, locator, max_iteration=1):
         #ios strategy:
         #1) check if element is in view hierarchy
         #   => if not error
@@ -185,11 +185,11 @@ class _TouchKeywords(KeywordGroup):
             height = self.get_window_height()
             i = 0
             while i < max_iteration:
+                i += 1
                 self.swipe(start_x=0,start_y=height-200,offset_x=0,offset_y=-height,duration=3000)
                 element_visible = element.is_displayed()
                 if element_visible:
                     return
-                i += 1    
             raise AssertionError("Element '%s' could not be displayed without too much scrolling" % locator)
         else:
             raise AssertionError("Element '%s' could not be found" % locator)
