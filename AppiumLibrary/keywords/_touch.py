@@ -95,15 +95,11 @@ class _TouchKeywords(KeywordGroup):
 
     def scroll_down(self, locator):
         """Scrolls down to element"""
-        driver = self._current_application()
-        element = self._element_find(locator, True, True)
-        driver.execute_script("mobile: scroll", {"direction": 'down', 'element': element.id})
+        self.scroll_dir(locator=locator, direction='down')
 
     def scroll_up(self, locator):
         """Scrolls up to element"""
-        driver = self._current_application()
-        element = self._element_find(locator, True, True)
-        driver.execute_script("mobile: scroll", {"direction": 'up', 'element': element.id})
+        self.scroll_dir(locator=locator, direction='up')
 
     def scroll_down_in(self, locator, scroll_locator=None):
         """Scrolls down in scrollview to element"""
@@ -119,9 +115,8 @@ class _TouchKeywords(KeywordGroup):
             else:
                 scroll_desc = locator 
             driver.find_element_by_android_uiautomator('new UiScrollable(new UiSelector().descriptionContains("'+scroll_desc+'")).scrollIntoView(new UiSelector().descriptionContains("'+el_desc+'"))')
-        else:
-            scroll_down(self,locator)
-        
+        elif platform == 'ios':
+            self.search_and_display_ios_element(locator=locator)
 
     def long_press(self, locator, duration=1000):
         """ Long press the element with optional duration """
@@ -159,3 +154,52 @@ class _TouchKeywords(KeywordGroup):
         driver = self._current_application()
         action = TouchAction(driver)
         action.press(x=coordinate_X, y=coordinate_Y).release().perform()
+
+    # Private
+
+    def scroll_dir(self, locator, direction):
+        """Scrolls to element in given direction"""
+        driver = self._current_application()
+        element = self._element_find(locator, True, True)
+        driver.execute_script("mobile: scroll", {"direction": direction, 'element': element.id})
+
+    def search_and_display_ios_element(self, locator, max_iteration=10):
+        #ios strategy:
+        #1) check if element is in view hierarchy
+        #   => if not error
+        #2) check if visible
+        #   => if so the stop searching
+        #3) scroll a screen height
+        #4) check if visible
+        #   => if so the stop searching
+        #5) scroll a screen height
+        #6) check if visible
+        #   => if so the stop searching
+        #7) scroll a screen height
+        element = self._element_find(locator, True, False)
+        if element is not None:
+            element_visible = element.is_displayed()
+            #to be used later to process the ammount of scroll needed
+            element_size = element.size
+            element_location = element.location
+            height = self.get_window_height()
+            i = 0
+            while i < max_iteration:
+                self.swipe(start_x=0,start_y=height-200,offset_x=0,offset_y=-height,duration=3000)
+                element_visible = element.is_displayed()
+                if element_visible:
+                    return
+                i += 1    
+            raise AssertionError("Element '%s' could not be displayed without too much scrolling" % locator)
+        else:
+            raise AssertionError("Element '%s' could not be found" % locator)
+            return None
+            # screen_h = self.get_window_height()
+            # screen_w = self.get_window_width()
+            # position = self.get_element_location(locator=locator)
+            # size = self.get_element_size(locator=locator)
+            # el_h = size["height"]
+            # offset = position["y"] + el_h - screen_h
+            # offset = 10
+            #self.scroll(start_locator="mountingAdvice_outdoorSiren_fixing_drill_step1_illustration",end_locator=locator)
+            #self.swipe(start_x=0,start_y=screen_h-200,offset_x=0,offset_y=screen_h-220,duration=3000)
