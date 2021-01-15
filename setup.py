@@ -41,9 +41,9 @@ setup(name='robotframework-appiumlibrary',
       ],
       install_requires=[
           'decorator >= 3.3.2',
-          'robotframework >= 2.6.0',
+          'robotframework >= 3.2.2',
           'docutils >= 0.8.1',
-          'Appium-Python-Client >= 1.0.1',
+          'Appium-Python-Client >= 1.0.2',
           'selenium >= 2.47.1',
           'kitchen >= 1.2.4',
           'six >= 1.10.0'
